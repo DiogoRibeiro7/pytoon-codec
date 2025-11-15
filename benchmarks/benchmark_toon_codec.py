@@ -2,14 +2,13 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from time import perf_counter
-from typing import Callable, Dict
-
-from pytoon_codec import ToonCodec
 
 from benchmarks.generate_payloads import generate_events, generate_metrics
+from pytoon_codec import ToonCodec
 
-PayloadBuilder = Callable[[int], Dict]
+PayloadBuilder = Callable[[int], dict]
 
 
 def _run_suite(name: str, builder: PayloadBuilder, codec: ToonCodec) -> None:
