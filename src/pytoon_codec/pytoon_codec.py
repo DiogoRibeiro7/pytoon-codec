@@ -5,10 +5,10 @@ import json
 import re
 from collections.abc import Iterable, Mapping, MutableMapping, Sequence
 from dataclasses import dataclass
-from typing import Any, Union
+from typing import Any
 
-JSONPrimitive = Union[str, int, float, bool, None]
-JSONValue = Union["JSONPrimitive", "JSONList", "JSONDict"]
+JSONPrimitive = str | int | float | bool | None
+JSONValue = JSONPrimitive | "JSONList" | "JSONDict"
 JSONList = list[JSONValue]
 JSONDict = dict[str, JSONValue]
 
@@ -433,7 +433,7 @@ class ToonCodec:
             self._format_row_line(schema.field_names, row, indent=indent + 2)
             for row in rows
         ]
-        return [header] + body_lines
+        return [header, *body_lines]
 
     @staticmethod
     def _format_header_line(schema: ToonTableSchema, indent: int) -> str:
