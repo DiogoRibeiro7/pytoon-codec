@@ -1,23 +1,30 @@
 {
   "title": "pytoon-codec: TOON encoder/decoder for time series and events",
+  "description": "A compact Python encoder/decoder for TOON (Token-Oriented Object Notation), tuned for time-series and nested event logs in LLM prompts. It supports tabular TOON blocks for arrays of objects, dotted-path flattening for nested structures, and type-preserving round-trip conversion between JSON and TOON format. Designed to maximize token efficiency while maintaining human readability.",
+  "version": "v0.1.0",
   "upload_type": "software",
-  "description": "A compact TOON encoder/decoder for time series and nested event logs, tuned for LLM prompts.",
+  "access_right": "open",
   "creators": [
     {
       "name": "Ribeiro, Diogo",
-      "affiliation": "ESMAD, IPP",
-      "orcid": "https://orcid.org/0009-0001-2022-7072"
+      "orcid": "0009-0001-2022-7072",
+      "affiliation": "ESMAD - Instituto Politécnico do Porto; MySense"
     }
   ],
-  "access_right": "open",
-  "license": "MIT",
   "keywords": [
     "TOON",
     "LLM",
-    "serialization",
     "time series",
-    "events",
-    "Python"
+    "event logs",
+    "Python",
+    "serialization"
   ],
-  "language": "eng"
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/DiogoRibeiro7/pytoon-codec",
+      "relation": "isSupplementTo",
+      "resource_type": "software",
+      "scheme": "url"
+    }
+  ]
 }
