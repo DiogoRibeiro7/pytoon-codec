@@ -16,7 +16,7 @@ keywords = ["TOON", "LLM", "serialization", "time-series", "events", "token-effi
 python = ">=3.10,<3.13"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.0.0"
+pytest = "^9.0.1"
 ruff = "^0.8.0"
 mypy = "^1.13.0"
 pre-commit = "^4.0.0"
