@@ -7,7 +7,7 @@ on:
     branches: [main, develop]
 
 jobs:
-  test:
+  tests:
     name: Test Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
     strategy:
@@ -45,17 +45,33 @@ jobs:
       - name: Install project
         run: poetry install --no-interaction
 
-      - name: Run ruff linter
-        run: poetry run ruff check .
-
-      - name: Run ruff formatter check
-        run: poetry run ruff format --check .
-
-      - name: Run mypy type checker
-        run: poetry run mypy src
-
       - name: Run pytest
         run: poetry run pytest --verbose --color=yes
+
+  unit-tests:
+    name: Unit tests (marker)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.8.0
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Install dependencies
+        run: poetry install --no-interaction
+
+      - name: Run pytest (unit marker)
+        run: poetry run pytest -m unit --verbose --color=yes
 
   lint:
     name: Lint and Format Check
