@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pytoon-codec"
-version = "0.1.0"
+version = "0.2.0"
 description = "A compact TOON encoder/decoder for time series and nested event logs, tuned for LLM prompts."
 authors = ["Diogo Ribeiro <dfr@esmad.ipp.pt>"]
 license = "MIT"

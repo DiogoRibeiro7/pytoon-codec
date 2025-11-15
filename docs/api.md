@@ -47,14 +47,15 @@ codec_flat = ToonCodec(expand_paths=False)
 ### Method: `encode`
 
 ```python
-encode(data: Mapping[str, Any]) -> str
+encode(data: Mapping[str, Any], *, pretty_tables: bool = False) -> str
 ```
 
-Encode a Python dict-like object into TOON text format.
+Encode a Python dict-like object into TOON text format. Set ``pretty_tables=True`` to indent table blocks for readability.
 
 **Parameters:**
 
 - **`data`** (Mapping[str, Any]): A dict or dict-like mapping containing JSON-serializable values. Must be a mapping at the top level (not a list or primitive).
+- **`pretty_tables`** (bool, optional): Indent table headers/rows (arrays of objects) by two spaces.
 
 **Returns:**
 
@@ -161,6 +162,20 @@ print(data)
 2. **Primitive arrays** (`key[N]: v1,v2`) → List of primitives
 3. **Tabular blocks** (`key[N]{cols}: rows`) → List of dicts
 4. **Dotted keys** (`user.id`) → Expanded to nested dicts if `expand_paths=True`
+
+---
+
+### Method: `decode_stream`
+
+```python
+decode_stream(text: str) -> Iterator[tuple[str, JSONValue]]
+```
+
+Iteratively yields `(key, value)` pairs as the TOON document is parsed. Keys are always returned in dotted form regardless of ``expand_paths`` so callers can build their own nested representations without buffering the entire document.
+
+**Returns:** Iterator over `(key, value)` tuples in file order.
+
+**Raises:** Same errors as :meth:`decode` (malformed text, duplicate keys, non-string input).
 
 ---
 
