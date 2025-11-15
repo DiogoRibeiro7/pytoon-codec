@@ -5,12 +5,12 @@ import json
 import re
 from collections.abc import Iterable, Mapping, MutableMapping, Sequence
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, TypeAlias
 
 JSONPrimitive = str | int | float | bool | None
-JSONValue = JSONPrimitive | "JSONList" | "JSONDict"
-JSONList = list[JSONValue]
-JSONDict = dict[str, JSONValue]
+JSONValue: TypeAlias = JSONPrimitive | list["JSONValue"] | dict[str, "JSONValue"]
+JSONList: TypeAlias = list[JSONValue]
+JSONDict: TypeAlias = dict[str, JSONValue]
 
 
 class ToonEncodingError(Exception):
@@ -207,9 +207,12 @@ class ToonCodec:
             flat[key] = value
             i += 1
 
-        # Optionally expand dotted paths into nested objects
+        # Optionally expand dotted paths into nested objects, including within arrays
         if self.expand_paths:
-            return self._expand_dotted_paths(flat)
+            expanded_flat = {
+                key: self._expand_nested_value(value) for key, value in flat.items()
+            }
+            return self._expand_dotted_paths(expanded_flat)
 
         return dict(flat)
 
@@ -740,3 +743,22 @@ class ToonCodec:
             current[last] = value
 
         return root
+
+    def _expand_nested_value(self, value: JSONValue) -> JSONValue:
+        """
+        Recursively expand dotted keys inside nested dicts/lists.
+
+        Used during decode() so that table rows and other nested structures
+        regain their original JSON shapes.
+        """
+        if isinstance(value, list):
+            return [self._expand_nested_value(item) for item in value]
+
+        if isinstance(value, dict):
+            expanded = self._expand_dotted_paths(value)
+            return {
+                key: self._expand_nested_value(sub_value)
+                for key, sub_value in expanded.items()
+            }
+
+        return value
