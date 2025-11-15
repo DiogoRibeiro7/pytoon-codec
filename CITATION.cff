@@ -7,7 +7,7 @@ authors:
     given-names: "Diogo"
     affiliation: "ESMAD - Instituto Politécnico do Porto; MySense"
     orcid: "https://orcid.org/0009-0001-2022-7072"
-version: "0.1.0"
+version: "0.2.0"
 repository-code: "https://github.com/DiogoRibeiro7/pytoon-codec"
 license: MIT
 keywords:

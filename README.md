@@ -1,5 +1,10 @@
 # pytoon-codec
 
+[![CI](https://github.com/DiogoRibeiro7/pytoon-codec/actions/workflows/ci.yml/badge.svg)](https://github.com/DiogoRibeiro7/pytoon-codec/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/github/license/DiogoRibeiro7/pytoon-codec.svg)](https://github.com/DiogoRibeiro7/pytoon-codec/blob/main/LICENSE)
+[![Python Versions](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue)](pyproject.toml)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17619909.svg)](https://doi.org/10.5281/zenodo.17619909)
+
 **pytoon-codec** is a Python library that implements a TOON (Token-Oriented Object Notation) encoder/decoder for time-series data, nested event logs, and structured JSON-like objects. TOON is designed to maximize token efficiency when embedding structured data in LLM prompts, using a compact, human-readable syntax that represents arrays of objects as tabular blocks with CSV-style rows, flattens nested objects into dotted keys, and preserves type information for primitives.
 
 ---
@@ -73,6 +78,60 @@ decoded = codec.decode(toon)
 # Returns the original nested structure
 assert decoded == data
 ```
+
+---
+
+## Examples
+
+- `examples/time_series_basic.py` – encodes/decodes a metric time series.
+  ```bash
+  poetry run python examples/time_series_basic.py
+  ```
+- `examples/nested_events_basic.py` – encodes/decodes nested sensor events.
+  ```bash
+  poetry run python examples/nested_events_basic.py
+  ```
+- Interactive walkthrough: see [`examples/notebooks/pytoon_codec_intro.ipynb`](examples/notebooks/pytoon_codec_intro.ipynb) and the setup notes in [`examples/notebooks/README.md`](examples/notebooks/README.md).
+
+---
+
+## Benchmarking
+
+Quick CPU benchmarks are located under `benchmarks/`. Run them after installing dependencies:
+
+```bash
+poetry run python benchmarks/benchmark_toon_codec.py
+```
+
+These measurements are intended to catch obvious encode/decode regressions for medium-sized time series and event logs between releases (they are not tuned to compete with highly optimized C/C++ serializers).
+
+---
+
+## LLM integration
+
+A common workflow is:
+
+1. Build a Python dict containing metrics/events.
+2. Encode it to TOON (`codec.encode(data)`) and embed the resulting block into the LLM prompt.
+3. Let the LLM return either prose (interpreting the data) or another TOON block (for structured responses).
+4. Decode any TOON replies back into Python dicts with `codec.decode(...)`.
+
+See:
+
+- [`examples/llm_integration_openai.py`](examples/llm_integration_openai.py) – encodes a payload and shows a commented OpenAI client call. Install `openai` and set `OPENAI_API_KEY` before actually invoking the API.
+- [`examples/llm_integration_generic.py`](examples/llm_integration_generic.py) – demonstrates the same flow with a `call_llm()` placeholder, highlighting that TOON is just a serialization layer before/after any LLM provider.
+
+---
+
+## API quick reference
+
+```python
+from pytoon_codec import ToonCodec, ToonEncodingError, ToonDecodingError
+```
+
+- `ToonCodec`: main encoder/decoder with `encode()`/`decode()` helpers and optional dotted-path expansion when decoding.
+- `ToonEncodingError`: raised when the input structure cannot be represented in TOON (e.g., nested arrays inside objects, mixed row schemas).
+- `ToonDecodingError`: raised when TOON text is malformed (e.g., row-length mismatches, invalid quoting, duplicate keys).
 
 ---
 
@@ -237,7 +296,7 @@ ToonCodec(expand_paths: bool = True)
 
 ## Releases and Versioning
 
-This project follows [Semantic Versioning](https://semver.org/) (SemVer). Releases are tagged as `vX.Y.Z` (e.g., `v0.1.0`, `v0.2.0`).
+This project follows [Semantic Versioning](https://semver.org/) (SemVer). Releases are tagged as `vX.Y.Z` (e.g., `v0.2.0`, `v0.2.1`).
 
 ### Release History
 
@@ -259,16 +318,9 @@ If you use `pytoon-codec` in your research or project, please cite it using the 
 
 ### Zenodo DOI
 
-<!--
-Once the first GitHub release is archived by Zenodo, a DOI badge will be available here.
-Replace XXXXXXX below with the actual Zenodo DOI after the first release is archived.
--->
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17619909.svg)](https://doi.org/10.5281/zenodo.17619909)
 
-<!--
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXXX)
--->
-
-A Zenodo DOI will be automatically generated when the first GitHub release is created and archived. This DOI provides a permanent, citable reference to the software.
+The published Zenodo record for `pytoon-codec` lives at [doi.org/10.5281/zenodo.17619909](https://doi.org/10.5281/zenodo.17619909), providing a permanent, citable reference for this repository.
 
 ### BibTeX
 
@@ -278,7 +330,7 @@ A Zenodo DOI will be automatically generated when the first GitHub release is cr
   title = {pytoon-codec: TOON encoder/decoder for time series and events},
   year = {2025},
   url = {https://github.com/DiogoRibeiro7/pytoon-codec},
-  version = {0.1.0}
+  version = {0.2.0}
 }
 ```
 

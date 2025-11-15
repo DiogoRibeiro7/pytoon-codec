@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2025-11-15
+
+### Added
+
+- Benchmark suite (`benchmarks/`) with synthetic payload generators and CLI runner
+- Performance regression smoke test to guard encode/decode timings
+- Extensive examples directory (scripts + notebook) plus LLM integration samples
+- Additional negative tests covering input validation and CSV edge cases
+- README sections for benchmarking, examples, LLM integration, and API quick reference
+
+### Changed
+
+- Improved decoding robustness for nested dotted paths and CSV quoting rules
+- Docstrings for `ToonCodec.encode`/`decode` now document supported shapes and errors
+- Project metadata (Zenodo/CITATION) updated for the 0.2.0 release
+
 ---
 
 ## [0.1.0] - 2025-01-15

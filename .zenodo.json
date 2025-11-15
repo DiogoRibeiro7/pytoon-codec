@@ -1,7 +1,8 @@
 {
   "title": "pytoon-codec: TOON encoder/decoder for time series and events",
   "description": "A compact Python encoder/decoder for TOON (Token-Oriented Object Notation), tuned for time-series and nested event logs in LLM prompts. It supports tabular TOON blocks for arrays of objects, dotted-path flattening for nested structures, and type-preserving round-trip conversion between JSON and TOON format. Designed to maximize token efficiency while maintaining human readability.",
-  "version": "v0.1.0",
+  "version": "v0.2.0",
+  "doi": "10.5281/zenodo.17619909",
   "upload_type": "software",
   "access_right": "open",
   "creators": [

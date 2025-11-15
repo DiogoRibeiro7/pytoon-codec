@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import csv
 import json
 import re
 from collections.abc import Iterable, Mapping, MutableMapping, Sequence
@@ -92,17 +91,30 @@ class ToonCodec:
         """
         Encode a JSON-like mapping into TOON text.
 
+        Supported shapes:
+            * Top-level mappings only (not lists/primitives)
+            * Primitives -> ``key: value``
+            * Nested dicts -> flattened dotted keys
+            * Lists of primitives -> ``key[N]: v1,v2``
+            * Lists of dicts -> tabular blocks ``key[N]{cols}: ...``
+
+        Example:
+            >>> codec = ToonCodec()
+            >>> codec.encode({"stats": [{"date": "2025-01-01", "views": 42}]})
+            'stats[1]{date,views}:\\n  2025-01-01,42'
+
         Args:
             data:
-                Mapping from top-level keys to JSON-serializable values, as
-                described in the class docstring.
+                Mapping from top-level keys to JSON-serializable values.
 
         Returns:
-            A string containing the TOON representation.
+            str: TOON representation.
 
         Raises:
-            ToonEncodingError: on unsupported shapes.
-            TypeError: if unsupported Python types are encountered.
+            ToonEncodingError: if the structure violates the supported shapes
+                (e.g., arrays nested inside objects or heterogeneous rows).
+            TypeError: if the top-level value is not a mapping or primitives
+                contain unsupported Python types.
         """
         if not isinstance(data, Mapping):
             raise TypeError(f"ToonCodec.encode expects a mapping, got {type(data)}")
@@ -115,28 +127,35 @@ class ToonCodec:
             if block_lines:
                 blocks.append("\n".join(block_lines))
 
+        # TODO: Add optional pretty-print mode that indents nested tables for readability.
+
         return "\n\n".join(blocks)
 
     def decode(self, text: str) -> JSONDict:
         """
-        Decode TOON text produced by this codec back into JSON-like data.
+        Decode TOON text back into JSON-like data produced by :meth:`encode`.
 
-        Supports:
-            * scalar lines       -> key: primitive
-            * primitive arrays   -> key[N]: v1,v2,...
-            * tabular arrays     -> key[N]{cols}: <rows>
+        Supported constructs:
+            * Scalar lines       -> ``key: primitive``
+            * Primitive arrays   -> ``key[N]: v1,v2,...``
+            * Tabular arrays     -> ``key[N]{cols}: <rows>``
 
-        If `expand_paths` is True, dotted keys are expanded into nested dicts.
+        Example:
+            >>> codec = ToonCodec()
+            >>> codec.decode('flag: true')
+            {'flag': True}
 
         Args:
             text: TOON document as a string.
 
         Returns:
-            A dict mapping keys to primitives, lists, or nested dicts.
+            dict[str, Any]: Mapping of keys to primitives, lists, or nested dicts.
+            When ``expand_paths`` is ``True`` (default) dotted keys are expanded.
 
         Raises:
-            ToonDecodingError: if TOON text is malformed.
-            TypeError: if 'text' is not a string.
+            ToonDecodingError: on malformed TOON text (bad headers, row counts,
+                invalid quoting, duplicates, etc.).
+            TypeError: if ``text`` is not a string.
         """
         if not isinstance(text, str):
             raise TypeError(f"ToonCodec.decode expects a string, got {type(text)}")
@@ -180,7 +199,7 @@ class ToonCodec:
                     break  # Non-indented line => start of next top-level block
 
                 rows = self._parse_table_rows(schema, body)
-                flat[schema.name] = rows  # type: ignore[assignment]
+                self._store_decoded_value(flat, schema.name, rows)
                 continue
 
             # Primitive array line?
@@ -198,13 +217,13 @@ class ToonCodec:
                         f"but {len(values)} values were parsed."
                     )
 
-                flat[key] = values  # type: ignore[assignment]
+                self._store_decoded_value(flat, key, values)
                 i += 1
                 continue
 
             # Scalar line
             key, value = self._parse_scalar_line(line)
-            flat[key] = value
+            self._store_decoded_value(flat, key, value)
             i += 1
 
         # Optionally expand dotted paths into nested objects, including within arrays
@@ -214,11 +233,29 @@ class ToonCodec:
             }
             return self._expand_dotted_paths(expanded_flat)
 
+        # TODO: Support streaming decode that yields blocks incrementally for large files.
+
         return dict(flat)
 
     # ------------------------------------------------------------------
     # Encoder helpers
     # ------------------------------------------------------------------
+
+    @staticmethod
+    def _store_decoded_value(
+        flat: MutableMapping[str, JSONValue],
+        key: str,
+        value: JSONValue,
+    ) -> None:
+        """
+        Store a decoded top-level value, raising on duplicates.
+        """
+        if key in flat:
+            raise ToonDecodingError(
+                f"Key '{key}' already exists; duplicate entries are not allowed."
+            )
+
+        flat[key] = value
 
     @staticmethod
     def _is_json_primitive(value: Any) -> bool:
@@ -503,7 +540,14 @@ class ToonCodec:
 
         # Quote strings that contain CSV delimiters, quotes, or leading/trailing spaces
         # to avoid ambiguity when parsing CSV rows
-        needs_quotes = "," in s or "\n" in s or "\r" in s or '"' in s or s.strip() != s
+        needs_quotes = (
+            s == ""
+            or "," in s
+            or "\n" in s
+            or "\r" in s
+            or '"' in s
+            or s.strip() != s
+        )
 
         if not needs_quotes:
             return s
@@ -590,7 +634,8 @@ class ToonCodec:
         """
         Parse table body lines according to the schema.
 
-        Blank lines are ignored; each non-blank line is parsed as CSV.
+        Blank lines are ignored; each non-blank line is parsed using
+        JSON-aware CSV splitting (matching the encoder's formatting).
         """
         rows: list[JSONDict] = []
 
@@ -600,14 +645,7 @@ class ToonCodec:
 
             line = raw_line.lstrip()
 
-            reader = csv.reader([line])
-            try:
-                cells = next(reader)
-            except csv.Error as exc:
-                raise ToonDecodingError(
-                    f"CSV parsing error in table '{schema.name}' "
-                    f"on line {idx}: {raw_line!r}"
-                ) from exc
+            cells = self._split_cells(line, context=f"table '{schema.name}' row {idx}")
 
             if len(cells) != len(schema.field_names):
                 raise ToonDecodingError(
@@ -634,14 +672,7 @@ class ToonCodec:
         if raw_values.strip() == "":
             return []
 
-        reader = csv.reader([raw_values])
-        try:
-            cells = next(reader)
-        except csv.Error as exc:
-            raise ToonDecodingError(
-                f"CSV parsing error in primitive array values: {raw_values!r}"
-            ) from exc
-
+        cells = self._split_cells(raw_values, context="primitive array")
         return [self._parse_cell(cell) for cell in cells]
 
     def _parse_scalar_line(self, line: str) -> tuple[str, JSONPrimitive]:
@@ -659,6 +690,50 @@ class ToonCodec:
             return key, None
 
         return key, self._parse_cell(raw_value)
+
+    def _split_cells(self, raw: str, *, context: str) -> list[str]:
+        """
+        Split a comma-separated line into cells using the encoder's JSON-style quoting.
+        """
+        cells: list[str] = []
+        current: list[str] = []
+        in_quotes = False
+        escape = False
+
+        for ch in raw:
+            if escape:
+                current.append(ch)
+                escape = False
+                continue
+
+            if ch == "\\" and in_quotes:
+                current.append(ch)
+                escape = True
+                continue
+
+            if ch == '"':
+                current.append(ch)
+                in_quotes = not in_quotes
+                continue
+
+            if ch == "," and not in_quotes:
+                cells.append("".join(current))
+                current = []
+                continue
+
+            current.append(ch)
+
+        if escape:
+            raise ToonDecodingError(
+                f"Dangling escape sequence while parsing {context}: {raw!r}"
+            )
+        if in_quotes:
+            raise ToonDecodingError(
+                f"Unterminated quoted value while parsing {context}: {raw!r}"
+            )
+
+        cells.append("".join(current))
+        return cells
 
     @staticmethod
     def _parse_cell(cell: str) -> JSONPrimitive:
