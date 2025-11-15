@@ -541,12 +541,7 @@ class ToonCodec:
         # Quote strings that contain CSV delimiters, quotes, or leading/trailing spaces
         # to avoid ambiguity when parsing CSV rows
         needs_quotes = (
-            s == ""
-            or "," in s
-            or "\n" in s
-            or "\r" in s
-            or '"' in s
-            or s.strip() != s
+            s == "" or "," in s or "\n" in s or "\r" in s or '"' in s or s.strip() != s
         )
 
         if not needs_quotes:

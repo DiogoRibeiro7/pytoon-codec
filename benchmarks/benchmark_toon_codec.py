@@ -30,7 +30,9 @@ def _run_suite(name: str, builder: PayloadBuilder, codec: ToonCodec) -> None:
         assert decoded == payload, "Benchmark round-trip failed"
 
         total = encode_time + decode_time
-        print(f"{n_rows:8d} | {encode_time:10.4f} | {decode_time:10.4f} | {total:10.4f}")
+        print(
+            f"{n_rows:8d} | {encode_time:10.4f} | {decode_time:10.4f} | {total:10.4f}"
+        )
 
     print()
 

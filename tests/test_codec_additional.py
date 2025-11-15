@@ -35,7 +35,7 @@ def test_decode_requires_string_input() -> None:
 
 def test_decode_table_with_unterminated_quote_errors() -> None:
     codec = ToonCodec()
-    toon = "events[1]{name}:\n  \"unterminated"
+    toon = 'events[1]{name}:\n  "unterminated'
 
     with pytest.raises(ToonDecodingError, match="Unterminated quoted value"):
         codec.decode(toon)
@@ -43,7 +43,7 @@ def test_decode_table_with_unterminated_quote_errors() -> None:
 
 def test_decode_primitive_array_with_dangling_escape_errors() -> None:
     codec = ToonCodec()
-    toon = "tags[1]: \"dangling\\"
+    toon = 'tags[1]: "dangling\\'
 
     with pytest.raises(ToonDecodingError, match="Dangling escape sequence"):
         codec.decode(toon)
