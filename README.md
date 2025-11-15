@@ -284,8 +284,9 @@ ToonCodec(expand_paths: bool = True)
 
 **Methods:**
 
-- `encode(data: Mapping[str, Any]) -> str`: Encode a dict-like object into TOON text
-- `decode(text: str) -> dict`: Decode TOON text back into a dict
+- `encode(data: Mapping[str, Any], *, pretty_tables: bool = False) -> str`: Encode a dict-like object into TOON text (optionally indenting table blocks for readability).
+- `decode(text: str) -> dict`: Decode TOON text back into a dict (respecting `expand_paths`).
+- `decode_stream(text: str) -> Iterable[tuple[str, Any]]`: Yield `(key, value)` pairs as the input is parsed (always dotted keys, no buffering).
 
 **Exceptions:**
 
