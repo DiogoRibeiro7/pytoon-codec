@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import json
 import re
-from collections.abc import Iterable, Mapping, MutableMapping, Sequence
+from collections.abc import Iterable, Iterator, Mapping, MutableMapping, Sequence
 from dataclasses import dataclass
-from typing import Any, Iterator, TypeAlias, cast
+from typing import Any, TypeAlias, cast
 
 JSONPrimitive = str | int | float | bool | None
 JSONValue: TypeAlias = JSONPrimitive | list["JSONValue"] | dict[str, "JSONValue"]
