@@ -38,6 +38,6 @@ def test_metrics_roundtrip_smoke_under_two_seconds() -> None:
 
     baseline = _load_baseline()
     threshold = baseline * BASELINE_FACTOR
-    assert (
-        elapsed <= threshold
-    ), f"Encode+decode time {elapsed:.2f}s exceeded baseline {baseline:.2f}s"
+    assert elapsed <= threshold, (
+        f"Encode+decode time {elapsed:.2f}s exceeded baseline {baseline:.2f}s"
+    )
