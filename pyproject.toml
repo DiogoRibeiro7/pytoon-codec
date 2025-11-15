@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "pytoon-codec"
+version = "0.1.0"
+description = "A compact TOON encoder/decoder for time series and nested event logs, tuned for LLM prompts."
+authors = ["Diogo Ribeiro <dfr@esmad.ipp.pt>"]
+license = "MIT"
+readme = "README.md"
+packages = [
+    { include = "pytoon_codec", from = "src" }
+]
+homepage = "https://github.com/diogoribeiro7/pytoon-codec"
+repository = "https://github.com/diogoribeiro7/pytoon-codec"
+keywords = ["TOON", "LLM", "serialization", "time-series", "events", "token-efficiency"]
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.13"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+
+[build-system]
+requires = ["poetry-core>=1.8.0"]
+build-backend = "poetry.core.masonry.api"

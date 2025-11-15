@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+title: "pytoon-codec: TOON encoder/decoder for time series and events"
+message: "If you use this software, please cite it as below."
+type: software
+authors:
+  - family-names: Ribeiro
+    given-names: Diogo
+    affiliation: ESMAD, IPP
+    orcid: "https://orcid.org/0009-0001-2022-7072"
+version: "0.1.0"
+repository-code: "https://github.com/DiogoRibeiro7/pytoon-codec"
+license: MIT

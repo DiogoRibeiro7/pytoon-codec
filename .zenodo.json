@@ -1,0 +1,23 @@
+{
+  "title": "pytoon-codec: TOON encoder/decoder for time series and events",
+  "upload_type": "software",
+  "description": "A compact TOON encoder/decoder for time series and nested event logs, tuned for LLM prompts.",
+  "creators": [
+    {
+      "name": "Ribeiro, Diogo",
+      "affiliation": "ESMAD, IPP",
+      "orcid": "https://orcid.org/0009-0001-2022-7072"
+    }
+  ],
+  "access_right": "open",
+  "license": "MIT",
+  "keywords": [
+    "TOON",
+    "LLM",
+    "serialization",
+    "time series",
+    "events",
+    "Python"
+  ],
+  "language": "eng"
+}
