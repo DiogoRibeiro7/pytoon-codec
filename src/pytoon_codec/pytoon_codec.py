@@ -4,7 +4,7 @@ import json
 import re
 from collections.abc import Iterable, Mapping, MutableMapping, Sequence
 from dataclasses import dataclass
-from typing import Any, TypeAlias
+from typing import Any, TypeAlias, cast
 
 JSONPrimitive = str | int | float | bool | None
 JSONValue: TypeAlias = JSONPrimitive | list["JSONValue"] | dict[str, "JSONValue"]
@@ -199,7 +199,7 @@ class ToonCodec:
                     break  # Non-indented line => start of next top-level block
 
                 rows = self._parse_table_rows(schema, body)
-                self._store_decoded_value(flat, schema.name, rows)
+                self._store_decoded_value(flat, schema.name, cast(JSONValue, rows))
                 continue
 
             # Primitive array line?
@@ -217,7 +217,7 @@ class ToonCodec:
                         f"but {len(values)} values were parsed."
                     )
 
-                self._store_decoded_value(flat, key, values)
+                self._store_decoded_value(flat, key, cast(JSONValue, values))
                 i += 1
                 continue
 
